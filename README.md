@@ -10,6 +10,12 @@
 
 Path 4.2 menu using CoreAnimation in Swift. Inspired by [AwesomeMenu](https://github.com/levey/AwesomeMenu).
 
+
+##Fork Changes
+
+- changed protocol method to optional except: ```swiftpathMenu(menu: PathMenu, didSelectIndex idx: Int)```
+- added container view with alpha 30%
+
 ##Screenshot
 ![PathMenu-Sample](https://raw.githubusercontent.com/pixyzehn/PathMenu/master/Assets/PathMenu-Sample-Demo.gif)
 ![PathMenu](https://raw.githubusercontent.com/pixyzehn/PathMenu/master/Assets/PathMenu-Demo.gif)
