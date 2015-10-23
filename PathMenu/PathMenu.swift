@@ -9,12 +9,12 @@
 import Foundation
 import UIKit
 
-public protocol PathMenuDelegate: class {
+@objc public protocol PathMenuDelegate: class {
     func pathMenu(menu: PathMenu, didSelectIndex idx: Int)
-    func pathMenuDidFinishAnimationClose(menu: PathMenu)
-    func pathMenuDidFinishAnimationOpen(menu: PathMenu)
-    func pathMenuWillAnimateOpen(menu: PathMenu)
-    func pathMenuWillAnimateClose(menu: PathMenu)
+    optional func pathMenuDidFinishAnimationClose(menu: PathMenu)
+    optional func pathMenuDidFinishAnimationOpen(menu: PathMenu)
+    optional func pathMenuWillAnimateOpen(menu: PathMenu)
+    optional func pathMenuWillAnimateClose(menu: PathMenu)
 }
 
 public class PathMenu: UIView, PathMenuItemDelegate {
@@ -115,6 +115,8 @@ public class PathMenu: UIView, PathMenuItemDelegate {
     
     public var motionState: State?
     
+    public var containerView : UIView?
+    
     public var startPoint: CGPoint = CGPointZero {
         didSet {
             startButton?.center = startPoint
@@ -157,10 +159,10 @@ public class PathMenu: UIView, PathMenuItemDelegate {
     override public func animationDidStop(anim: CAAnimation, finished flag: Bool) {
         if let animId = anim.valueForKey("id") {
             if animId.isEqual("lastAnimation") {
-                delegate?.pathMenuDidFinishAnimationClose(self)
+                delegate?.pathMenuDidFinishAnimationClose?(self)
             }
             if animId.isEqual("firstAnimation") {
-                delegate?.pathMenuDidFinishAnimationOpen(self)
+                delegate?.pathMenuDidFinishAnimationOpen?(self)
             }
         }
     }
@@ -194,7 +196,7 @@ public class PathMenu: UIView, PathMenuItemDelegate {
         }
         
         motionState = .Close
-        delegate?.pathMenuWillAnimateClose(self)
+        delegate?.pathMenuWillAnimateClose?(self)
         
         let angle = motionState == .Expand ? CGFloat(M_PI_4) + CGFloat(M_PI) : 0.0
         UIView.animateWithDuration(Double(startMenuAnimationDuration!), animations: { [weak self] () -> Void in
@@ -202,6 +204,8 @@ public class PathMenu: UIView, PathMenuItemDelegate {
         })
         
         delegate?.pathMenu(self, didSelectIndex: item.tag - 1000)
+        self.containerView?.removeFromSuperview()
+
     }
     
     //MARK: Animation, Position
@@ -215,13 +219,14 @@ public class PathMenu: UIView, PathMenuItemDelegate {
         switch state {
         case .Close:
             setMenu()
-            delegate?.pathMenuWillAnimateOpen(self)
+            delegate?.pathMenuWillAnimateOpen?(self)
             selector = "expand"
             flag = 0
             motionState = .Expand
             angle = CGFloat(M_PI_4) + CGFloat(M_PI)
         case .Expand:
-            delegate?.pathMenuWillAnimateClose(self)
+            delegate?.pathMenuWillAnimateClose?(self)
+
             selector = "close"
             flag = menuItems.count - 1
             motionState = .Close
@@ -312,6 +317,8 @@ public class PathMenu: UIView, PathMenuItemDelegate {
         animationgroup.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseIn)
         animationgroup.delegate = self
 
+        self.containerView?.removeFromSuperview()
+        
         if flag == 0 {
             animationgroup.setValue("lastAnimation", forKey: "id")
         }
@@ -325,6 +332,14 @@ public class PathMenu: UIView, PathMenuItemDelegate {
     public func setMenu() {
         let count = menuItems.count
         var denominator: Int?
+        
+        let screen = UIScreen.mainScreen().bounds
+        self.containerView = UIView(frame: CGRectMake(0, 0, screen.width, screen.height))
+       
+        self.containerView?.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.3)
+        
+        // self.addSubview(self.containerView!)
+        insertSubview(self.containerView!, belowSubview: startButton!)
         
         for (index, menuItem) in menuItems.enumerate() {
             let item = menuItem
@@ -354,7 +369,7 @@ public class PathMenu: UIView, PathMenuItemDelegate {
             
             item.center = item.startPoint!
             item.delegate = self
-
+            
             insertSubview(item, belowSubview: startButton!)
         }
     }
