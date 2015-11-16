@@ -38,12 +38,12 @@ public class PathMenu: UIView, PathMenuItemDelegate {
         static var ExpandRotation: CGFloat    = -CGFloat(M_PI * 2)
         static var CloseRotation: CGFloat     = CGFloat(M_PI * 2)
     }
-   
+    
     public enum State {
         case Close
         case Expand
     }
-        
+    
     required public init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
@@ -55,23 +55,23 @@ public class PathMenu: UIView, PathMenuItemDelegate {
     convenience public init(frame: CGRect!, startItem: PathMenuItem?, items:[PathMenuItem]?) {
         self.init(frame: frame)
         self.timeOffset = 0.036
-
+        
         self.nearRadius = Radius.Near
         self.endRadius  = Radius.End
         self.farRadius  = Radius.Far
-
+        
         self.animationDuration             = Duration.DefaultAnimation
         self.expandRotateAnimationDuration = Duration.DefaultAnimation
         self.closeRotateAnimationDuration  = Duration.CloseRotateAnimation
         self.startMenuAnimationDuration    = Duration.MenuDefaultAnimation
-
+        
         self.rotateAngle    = Angle.DefaultRotation
         self.menuWholeAngle = Angle.MenuWholeRotation
         self.expandRotation = Angle.ExpandRotation
         self.closeRotation  = Angle.CloseRotation
-
+        
         self.startPoint = CGPointMake(UIScreen.mainScreen().bounds.width/2, UIScreen.mainScreen().bounds.height/2)
- 
+        
         self.menuItems = items ?? []
         self.motionState = .Close
         
@@ -80,7 +80,7 @@ public class PathMenu: UIView, PathMenuItemDelegate {
         self.startButton!.center = startPoint
         self.addSubview(startButton!)
     }
-
+    
     public var menuItems: [PathMenuItem] = [] {
         didSet {
             for view in subviews {
@@ -93,17 +93,17 @@ public class PathMenu: UIView, PathMenuItemDelegate {
     
     public var startButton: PathMenuItem?
     public weak var delegate: PathMenuDelegate?
-
+    
     public var flag: Int?
     public var timer: NSTimer?
     
     public var timeOffset: CGFloat!
-
+    
     public var rotateAngle: CGFloat!
     public var menuWholeAngle: CGFloat!
     public var expandRotation: CGFloat!
     public var closeRotation: CGFloat!
-
+    
     public var animationDuration: CGFloat!
     public var expandRotateAnimationDuration: CGFloat!
     public var closeRotateAnimationDuration: CGFloat!
@@ -130,7 +130,7 @@ public class PathMenu: UIView, PathMenuItemDelegate {
             startButton?.image = image
         }
     }
-
+    
     public var highlightedImage: UIImage? {
         didSet {
             startButton?.highlightedImage = highlightedImage
@@ -185,7 +185,7 @@ public class PathMenu: UIView, PathMenuItemDelegate {
         let blowup = blowupAnimationAtPoint(item.center)
         item.layer.addAnimation(blowup, forKey: "blowup")
         item.center = item.startPoint!
-
+        
         for (_, menuItem) in menuItems.enumerate() {
             let otherItem = menuItem
             let shrink = shrinkAnimationAtPoint(otherItem.center)
@@ -201,18 +201,18 @@ public class PathMenu: UIView, PathMenuItemDelegate {
         let angle = motionState == .Expand ? CGFloat(M_PI_4) + CGFloat(M_PI) : 0.0
         UIView.animateWithDuration(Double(startMenuAnimationDuration!), animations: { [weak self] () -> Void in
             self?.startButton?.transform = CGAffineTransformMakeRotation(angle)
-        })
+            })
         
         delegate?.pathMenu(self, didSelectIndex: item.tag - 1000)
         self.containerView?.removeFromSuperview()
-
+        
     }
     
     //MARK: Animation, Position
     
     public func handleTap() {
         let state = motionState!
-
+        
         let selector: Selector
         let angle: CGFloat
         
@@ -226,7 +226,7 @@ public class PathMenu: UIView, PathMenuItemDelegate {
             angle = CGFloat(M_PI_4) + CGFloat(M_PI)
         case .Expand:
             delegate?.pathMenuWillAnimateClose?(self)
-
+            
             selector = "close"
             flag = menuItems.count - 1
             motionState = .Close
@@ -235,7 +235,7 @@ public class PathMenu: UIView, PathMenuItemDelegate {
         
         UIView.animateWithDuration(Double(startMenuAnimationDuration!), animations: { [weak self] () -> Void in
             self?.startButton?.transform = CGAffineTransformMakeRotation(angle)
-        })
+            })
         
         if timer == nil {
             timer = NSTimer.scheduledTimerWithTimeInterval(Double(timeOffset!), target: self, selector: selector, userInfo: nil, repeats: true)
@@ -262,7 +262,7 @@ public class PathMenu: UIView, PathMenuItemDelegate {
         
         let positionAnimation = CAKeyframeAnimation(keyPath: "position")
         positionAnimation.duration = CFTimeInterval(animationDuration!)
-
+        
         let path = CGPathCreateMutable()
         CGPathMoveToPoint(path, nil, CGFloat(item.startPoint!.x), CGFloat(item.startPoint!.y))
         CGPathAddLineToPoint(path, nil, item.farPoint!.x, item.farPoint!.y)
@@ -316,7 +316,7 @@ public class PathMenu: UIView, PathMenuItemDelegate {
         animationgroup.fillMode       = kCAFillModeForwards
         animationgroup.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseIn)
         animationgroup.delegate = self
-
+        
         self.containerView?.removeFromSuperview()
         
         if flag == 0 {
@@ -335,7 +335,7 @@ public class PathMenu: UIView, PathMenuItemDelegate {
         
         let screen = UIScreen.mainScreen().bounds
         self.containerView = UIView(frame: CGRectMake(0, 0, screen.width, screen.height))
-       
+        
         self.containerView?.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.3)
         
         // self.addSubview(self.containerView!)
@@ -361,7 +361,7 @@ public class PathMenu: UIView, PathMenuItemDelegate {
             let j2 = Float(nearRadius) * cosf(Float(index) * Float(menuWholeAngle!) / Float(denominator!))
             let nearPoint = CGPointMake(startPoint.x + CGFloat(j1), startPoint.y - CGFloat(j2))
             item.nearPoint = RotateCGPointAroundCenter(nearPoint, center: startPoint, angle: rotateAngle!)
-
+            
             let k1 = Float(farRadius) * sinf(Float(index) * Float(menuWholeAngle!) / Float(denominator!))
             let k2 = Float(farRadius) * cosf(Float(index) * Float(menuWholeAngle!) / Float(denominator!))
             let farPoint = CGPointMake(startPoint.x + CGFloat(k1), startPoint.y - CGFloat(k2))
@@ -385,7 +385,7 @@ public class PathMenu: UIView, PathMenuItemDelegate {
         let positionAnimation = CAKeyframeAnimation(keyPath: "position")
         positionAnimation.values = [NSValue(CGPoint: p)]
         positionAnimation.keyTimes = [3]
- 
+        
         let scaleAnimation = CABasicAnimation(keyPath: "transform")
         scaleAnimation.toValue = NSValue(CATransform3D: CATransform3DMakeScale(3, 3, 1))
         
@@ -407,7 +407,7 @@ public class PathMenu: UIView, PathMenuItemDelegate {
         
         let scaleAnimation = CABasicAnimation(keyPath: "transform")
         scaleAnimation.toValue = NSValue(CATransform3D: CATransform3DMakeScale(0.01, 0.01, 1))
-
+        
         let opacityAnimation = CABasicAnimation(keyPath: "opacity")
         opacityAnimation.toValue = NSNumber(float: 0.0)
         
